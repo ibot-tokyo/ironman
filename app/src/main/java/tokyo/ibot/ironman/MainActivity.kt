@@ -144,7 +144,7 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
 
-        var context = this.applicationContext
+        val context = this.applicationContext
         val textView = findViewById<TextView>(R.id.ipAddressText)
 
         if (!isOnline()) {
