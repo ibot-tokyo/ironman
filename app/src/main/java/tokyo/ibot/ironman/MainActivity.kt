@@ -1,15 +1,21 @@
 package tokyo.ibot.ironman
 
 import android.app.Activity
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import android.widget.Toast
+import com.github.kittinunf.fuel.Fuel
 import com.google.android.things.pio.Gpio
 import com.google.android.things.pio.PeripheralManagerService
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import java.net.NetworkInterface
+import java.net.SocketException
 
 /**
  * Skeleton of an Android Things activity.
@@ -133,5 +139,66 @@ class MainActivity : Activity() {
                 Log.w("onCancelled", "Failed to read value.", error.toException())
             }
         })
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        var context = this.applicationContext
+        val textView = findViewById<TextView>(R.id.ipAddressText)
+
+        if (!isOnline()) {
+            textView.text = "isOffline"
+            return
+        }
+
+        val text = getIpAddress()
+
+        textView.text = text
+        sendToSlack(context, text)
+    }
+
+
+    private fun isOnline(): Boolean {
+        val connMgr = this.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connMgr.activeNetworkInfo
+        return (networkInfo != null) && networkInfo.isConnected
+    }
+
+    private fun getIpAddress(): String {
+        var text = ""
+        try {
+            val interfaces = NetworkInterface.getNetworkInterfaces()
+            while (interfaces.hasMoreElements()) {
+                val network = interfaces.nextElement()
+                val addresses = network.inetAddresses
+
+                while (addresses.hasMoreElements()) {
+                    val address = addresses.nextElement()
+
+                    Log.d("address", address.toString())
+                    text += address.toString() + System.lineSeparator()
+                }
+            }
+        } catch (e: SocketException) {
+            e.printStackTrace()
+        }
+
+        return text;
+    }
+
+    private fun sendToSlack(context: Context, text: String) {
+        // todo: set webHookUrl
+        var webHookUrl: String = "https://hooks.slack.com/services/xxxxx/xxxxx/xxxxxx"
+
+        Fuel.post(webHookUrl).body("{ \"text\" : \"$text\" }").responseString { _, response, result ->
+            result.fold({ _ ->
+                val data: String = String(response.data)
+                Log.d("data", data)
+            }, { err ->
+                Log.e("err", err.toString())
+                Toast.makeText(context, "error: sendToSlack", Toast.LENGTH_SHORT).show()
+            })
+        }
     }
 }
