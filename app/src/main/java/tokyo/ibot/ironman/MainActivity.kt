@@ -77,60 +77,39 @@ class MainActivity : Activity() {
 
                 when (modeText.text) {
                     "go" -> {
-                        signal1a.value = true
-                        signal1b.value = false
-                        signal2a.value = true
-                        signal2b.value = false
-                        signal3a.value = false
-                        signal3b.value = false
+                        forward(signal1a, signal1b)
+                        forward(signal2a, signal2b)
+                        stop(signal3a, signal3b)
                     }
                     "back" -> {
-                        signal1a.value = false
-                        signal1b.value = true
-                        signal2a.value = false
-                        signal2b.value = true
-                        signal3a.value = false
-                        signal3b.value = false
+                        reverse(signal1a, signal1b)
+                        reverse(signal2a, signal2b)
+                        stop(signal3a, signal3b)
                     }
                     "turnRight" -> {
-                        signal1a.value = true
-                        signal1b.value = false
-                        signal2a.value = false
-                        signal2b.value = true
-                        signal3a.value = true
-                        signal3b.value = false
+                        forward(signal1a, signal1b)
+                        reverse(signal2a, signal2b)
+                        forward(signal3a, signal3b)
                     }
                     "turnLeft" -> {
-                        signal1a.value = false
-                        signal1b.value = true
-                        signal2a.value = true
-                        signal2b.value = false
-                        signal3a.value = false
-                        signal3b.value = true
+                        reverse(signal1a, signal1b)
+                        forward(signal2a, signal2b)
+                        reverse(signal3a, signal3b)
                     }
                     "slideRight" -> {
-                        signal1a.value = false
-                        signal1b.value = false
-                        signal2a.value = false
-                        signal2b.value = false
-                        signal3a.value = true
-                        signal3b.value = false
+                        stop(signal1a, signal1b)
+                        stop(signal2a, signal2b)
+                        forward(signal1a, signal1b)
                     }
                     "slideLeft" -> {
-                        signal1a.value = false
-                        signal1b.value = false
-                        signal2a.value = false
-                        signal2b.value = false
-                        signal3a.value = false
-                        signal3b.value = true
+                        stop(signal1a, signal1b)
+                        stop(signal2a, signal2b)
+                        reverse(signal3a, signal3b)
                     }
                     else -> {
-                        signal1a.value = false
-                        signal1b.value = false
-                        signal2a.value = false
-                        signal2b.value = false
-                        signal3a.value = false
-                        signal3b.value = false
+                        stop(signal1a, signal1b)
+                        stop(signal2a, signal2b)
+                        stop(signal3a, signal3b)
                     }
                 }
             }
@@ -200,5 +179,20 @@ class MainActivity : Activity() {
                 Toast.makeText(context, "error: sendToSlack", Toast.LENGTH_SHORT).show()
             })
         }
+    }
+
+    private fun forward(signalA: Gpio, signalB: Gpio) {
+        signalA.value = true
+        signalB.value = true
+    }
+
+    private fun reverse(signalA: Gpio, signalB: Gpio) {
+        signalA.value = false
+        signalB.value = true
+    }
+
+    private fun stop(signalA: Gpio, signalB: Gpio) {
+        signalA.value = false
+        signalB.value = false
     }
 }
