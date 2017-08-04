@@ -99,7 +99,7 @@ class MainActivity : Activity() {
                     "slideRight" -> {
                         stop(signal1a, signal1b)
                         stop(signal2a, signal2b)
-                        forward(signal1a, signal1b)
+                        forward(signal3a, signal3b)
                     }
                     "slideLeft" -> {
                         stop(signal1a, signal1b)
