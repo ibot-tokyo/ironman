@@ -39,12 +39,12 @@ import java.net.SocketException
  */
 class MainActivity : Activity() {
 
-    val pin1a: String = "BCM5" // 右タイヤ
-    val pin1b: String = "BCM6"
-    val pin2a: String = "BCM23" // 左タイヤ
-    val pin2b: String = "BCM24"
-    val pin3a: String = "BCM17" // 前タイヤ
-    val pin3b: String = "BCM27"
+    private val pin1a: String = "BCM5" // 右タイヤ
+    private val pin1b: String = "BCM6"
+    private val pin2a: String = "BCM23" // 左タイヤ
+    private val pin2b: String = "BCM24"
+    private val pin3a: String = "BCM17" // 前タイヤ
+    private val pin3b: String = "BCM27"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
