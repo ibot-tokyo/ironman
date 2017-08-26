@@ -39,6 +39,9 @@ import java.net.SocketException
  */
 class MainActivity : Activity() {
 
+    private val pinAppStatus: String = "BCM26" // App LED
+    private val pinLanStatus: String = "BCM19" // Lan LED
+
     private val pin1a: String = "BCM5" // 右タイヤ
     private val pin1b: String = "BCM6"
     private val pin2a: String = "BCM23" // 左タイヤ
@@ -123,8 +126,16 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
 
+        val service = PeripheralManagerService()
+        val signalAppStatus = service.openGpio(pinAppStatus)
+        val signalLanStatus = service.openGpio(pinLanStatus)
+        signalAppStatus.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
+        signalLanStatus.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
+
         val context = this.applicationContext
         val textView = findViewById<TextView>(R.id.ipAddressText)
+
+        signalAppStatus.value = true
 
         if (!isOnline()) {
             textView.text = "isOffline"
@@ -133,6 +144,7 @@ class MainActivity : Activity() {
 
         val text = getIpAddress()
 
+        signalLanStatus.value = true
         textView.text = text
         sendToSlack(context, text)
     }
