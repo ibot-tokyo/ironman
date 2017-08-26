@@ -48,6 +48,8 @@ class MainActivity : Activity() {
     private val pin2b: String = "BCM24"
     private val pin3a: String = "BCM17" // 前タイヤ
     private val pin3b: String = "BCM27"
+    private val pin4a: String = "BCM20" // リフト
+    private val pin4b: String = "BCM21"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,16 +63,22 @@ class MainActivity : Activity() {
         val signal2b = service.openGpio(pin2b)
         val signal3a = service.openGpio(pin3a)
         val signal3b = service.openGpio(pin3b)
+        val signal4a = service.openGpio(pin4a)
+        val signal4b = service.openGpio(pin4b)
         signal1a.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
         signal1b.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
         signal2a.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
         signal2b.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
         signal3a.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
         signal3b.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
+        signal4a.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
+        signal4b.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
 
-        val key = "mode"
         val database = FirebaseDatabase.getInstance()
+        val key = "mode"
+        val liftKey = "lift"
         val ref = database.getReference(key)
+        val liftRef = database.getReference(liftKey)
 
         ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -113,6 +121,30 @@ class MainActivity : Activity() {
                         stop(signal1a, signal1b)
                         stop(signal2a, signal2b)
                         stop(signal3a, signal3b)
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.w("onCancelled", "Failed to read value.", error.toException())
+            }
+        })
+
+        liftRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val value = dataSnapshot.value
+                Log.d("onDataChange", value.toString())
+                modeText.text = value.toString()
+
+                when (modeText.text) {
+                    "up" -> {
+                        forward(signal4a, signal4b)
+                    }
+                    "down" -> {
+                        reverse(signal4a, signal4b)
+                    }
+                    else -> {
+                        stop(signal4a, signal4b)
                     }
                 }
             }
@@ -180,7 +212,7 @@ class MainActivity : Activity() {
 
     private fun sendToSlack(context: Context, text: String) {
         // todo: set webHookUrl
-        var webHookUrl: String = "https://hooks.slack.com/services/xxxxx/xxxxx/xxxxxx"
+        val webHookUrl: String = "https://hooks.slack.com/services/xxxxx/xxxxx/xxxxxx"
 
         Fuel.post(webHookUrl).body("{ \"text\" : \"$text\" }").responseString { _, response, result ->
             result.fold({ _ ->
